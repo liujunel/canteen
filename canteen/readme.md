@@ -15,6 +15,6 @@
 5. 使用maven重新编译该项目
 6. 修改配置文件 **application.yml** 的数据库连接信息（比如ip、端口、数据库、数据库账号、数据库密码等）
 7. 找到 **CanteenApplication** 主文件启动即可
-8. 访问地址：http://localhost:8080 
+8. 访问地址：http://localhost:8080
    1. 管理员的账号：8888
    2. 管理员的密码：123456

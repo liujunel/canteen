@@ -1,0 +1,10 @@
+{
+	"version": "v1.0",
+	"author": "le",
+	"homePage": "index.html",
+	"server": "windows",
+	"dataBase": "5.45",
+	"maxUpload": "5M",
+	"description": "",
+	"powerby": "copyright @2020 le"
+}

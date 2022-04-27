@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.canteen.sys.mapper.FacultyMapper">
+  <resultMap id="BaseResultMap" type="com.canteen.sys.domain.Faculty">
+    <!--@mbg.generated-->
+    <!--@Table tb_faculty-->
+    <id column="faculty_number" jdbcType="INTEGER" property="facultyNumber" />
+    <result column="faculty_name" jdbcType="VARCHAR" property="facultyName" />
+    <result column="faculty_address" jdbcType="VARCHAR" property="facultyAddress" />
+    <result column="faculty_sex" jdbcType="CHAR" property="facultySex" />
+    <result column="faculty_password" jdbcType="VARCHAR" property="facultyPassword" />
+    <result column="faculty_hiredate" jdbcType="TIMESTAMP" property="facultyHiredate" />
+    <result column="faculty_mgr" jdbcType="INTEGER" property="facultyMgr" />
+    <result column="faculty_section_id" jdbcType="INTEGER" property="facultySectionId" />
+    <result column="faculty_img_path" jdbcType="VARCHAR" property="facultyImgPath" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    faculty_number, faculty_name, faculty_address, faculty_sex, faculty_password, faculty_hiredate, 
+    faculty_mgr, faculty_section_id, faculty_img_path
+  </sql>
+    <select id="queryLeaderByLeaderName" resultType="com.canteen.sys.domain.Faculty">
+      select * from tb_faculty where faculty_name = #{leaderName}
+    </select>
+</mapper>

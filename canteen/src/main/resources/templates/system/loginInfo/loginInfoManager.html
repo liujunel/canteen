@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--可全部复制无bug-->
+    <meta charset="UTF-8">
+    <title>系别管理</title>
+    <link rel="stylesheet" href="/resources/layui/css/layui.css" media="all"/>
+    <link rel="stylesheet" href="/resources/css/public.css" media="all"/>
+    <link rel="stylesheet" href="/resources/layui_ext/dtree/dtree.css" media="all"/>
+    <link rel="stylesheet" href="/resources/layui_ext/dtree/font/dtreefont.css" media="all"/>
+</head>
+<!--子页面需要引入 layui.css public.css layui.js body 需要 class="childrenBody" 就是一个边距-->
+<body class="childrenBody">
+<!--查询条件开始-->
+<fieldset class="layui-elem-field" align="center">
+    <legend>查询条件</legend>
+    <div class="layui-field-box">
+        <form action="" lay-filter="doSearchForm" id="doSearchForm" class="layui-form layui-form-pane" method="get">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">登录名</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="loginName" placeholder="请输入要查询的登录名" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">登录ip</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="loginIp" placeholder="请输入要查询的登录ip" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">开始时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="startTime" readonly id="startTime" placeholder="yyyy-MM-dd HH:mm:ss" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">结束时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="endTime" readonly id="endTime" placeholder="yyyy-MM-dd HH:mm:ss" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button type="button" class="layui-btn layui-icon layui-icon-search" lay-submit="" lay-filter="doSearch">查询
+                    </button>
+                    <button type="reset" class="layui-btn layui-icon layui-icon-refresh layui-btn-warm">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</fieldset>
+<!--查询条件结束-->
+
+<!--数据表格开始-->
+<div>
+    <!--数据表格-->
+    <table class="layui-hide" id="mainTable" lay-filter="mainTable"></table>
+    <!--数据表格上面的工具栏 批量删除-->
+    <div id="mainToolBar" style="display: none;">
+        <button type="button" class="layui-btn layui-icon layui-icon-delete layui-btn-danger" lay-event="batchDel">批量删除</button>
+    </div>
+    <!--数据表格右边的操作 删除-->
+    <div id="mainRowBar" style="display: none;">
+        <button type="button" class="layui-btn layui-icon layui-icon-delete layui-btn-danger layui-btn-sm" lay-event="del">删除</button>
+    </div>
+</div>
+<!--数据表格结束-->
+
+
+</body>
+<script type="text/javascript" src="/resources/layui/layui.js"></script>
+<script type="text/javascript" src="/resources/layui_ext/dist/dtree.js"></script>
+<script>
+    // 提升作用域，dtree适用，为了其他页面能调用该对象（两个页面必须有一个公共的父页面）
+    var tableIns;
+    // 因为添加部门需要使用到下拉树 所以要扩展dtree
+    layui.use(["jquery", "form", "layer", "table", "laydate"], function () {
+        // jq
+        var $ = layui.jquery;
+        // 表单
+        var form = layui.form;
+        // 弹出层
+        var layer = layui.layer;
+        // 数据表格
+        var table = layui.table;
+        // 日期
+        var laydate = layui.laydate;
+
+        // 渲染时间
+        laydate.render({
+           elem: "#startTime",
+           type: "datetime"
+        });
+        laydate.render({
+            elem: "#endTime",
+            type: "datetime"
+        });
+
+        // 加载数据表格数据
+        tableIns = table.render({
+            elem: '#mainTable'
+            , url: '/loginInfo/loginInfos'
+            , toolbar: '#mainToolBar' //开启头部工具栏，并为其绑定左侧模板
+            , title: '登录日志数据表'
+            , page: true
+            , cols: [ [
+                {type: 'checkbox', fixed: 'left'}
+                , {field: 'id', title: 'ID', sort: true, align: 'center'}
+                , {field: 'loginName', title: '登录名称', align: 'center'}
+                , {field: 'loginIp', title: '登录ip地址', align: 'center'}
+                , {field: 'loginTime', title: '登录时间', align: 'center'}
+                , {field: 'right', title: '操作', toolbar: '#mainRowBar', align: 'center', fixed: 'right'}
+            ] ]
+            , done: function (res, curr, count) {   // 处理在某页只有一条数据删除之后 显示无数据
+                if (res.data.length == 0 && curr != 1) {
+                    tableIns.reload({
+                        page: {
+                            curr: (curr - 1)
+                        }
+                    })
+                }
+            }
+        });
+
+        // 模糊查询
+        form.on("submit(doSearch)", function (data) {
+            // 数据表格重载
+            tableIns.reload({
+                // url 默认为 tableIns里面的url
+                url: "/loginInfo/loginInfos",
+                // 这里是where条件   data.field表示表单中的数据
+                where: data.field,
+                // 分页，从第一页开始查
+                page: {
+                    curr: 1
+                }
+            });
+            // 阻止表单提交
+            return false;
+        });
+
+        // 监控工具栏的事件 批量删除、添加
+        table.on("toolbar(mainTable)", function (obj) {
+            switch (obj.event) {
+                case 'batchDel':
+                    batchDel();
+                    break;
+            }
+        });
+
+        // 监控行工具的事件 查看、更新、删除、分配权限
+        table.on("tool(mainTable)", function (obj) {
+            // 获取数据
+            var data = obj.data;
+            switch (obj.event) {
+                case 'del':
+                    del(data);
+                    break;
+            }
+        });
+
+        // 删除
+        function del(data) {
+            layer.confirm("你确定要删除这条数据吗？", {icon: 3, title: "提示"}, function (index) {
+                deleteDept(data);
+                // 关闭
+                layer.close(index);
+            });
+        }
+
+        // 真正的删除
+        function deleteDept(data) {
+            // 删除 Restful 删除
+            $.ajax({
+                type: 'delete',
+                url: '/loginInfo/loginInfo/' + data.id,
+                success: function (res) {
+                    if (res.code == 200) {
+                        // 需要重新渲染数据表格
+                        tableIns.reload();
+                    }
+                    // 提示信息
+                    layer.msg(res.msg, {icon: 1});
+                }
+            });
+        }
+
+        // 批量删除
+        function batchDel() {
+            // 获取选中行
+            var checkStatus = table.checkStatus("mainTable");
+            // 判断是否选中某行
+            var checkStatusLength = checkStatus.data.length;
+            if (checkStatusLength > 0) {
+                // 询问一下
+                layer.confirm("真的要删除这些数据吗？", {icon: 3, title: "提示"}, function (index) {
+                    // 获取数据
+                    var data = checkStatus.data;
+                    var ids = "";
+                    $.each(data, function (index, item) {
+                        index == 0 ? ids += "ids=" + item.id : ids += "&ids=" + item.id;
+                    });
+                    $.post("/loginInfo/loginInfoss", ids, function (res) {
+                        if (res.code == 200) {
+                            // 需要重新渲染数据表格
+                            tableIns.reload();
+                        }
+                        // 提示信息
+                        layer.msg(res.msg, {icon: 1});
+                    });
+                    // 关闭
+                    layer.close(index);
+                });
+            } else {
+                layer.msg("请选中某一行才能进行批量删除");
+            }
+
+        }
+
+    });
+
+</script>
+</html>

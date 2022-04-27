@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>饭堂员工管理</title>
+    <link rel="stylesheet" href="/resources/layui/css/layui.css" media="all"/>
+    <link rel="stylesheet" href="/resources/css/public.css" media="all"/>
+    <link rel="stylesheet" href="/resources/layui_ext/dtree/dtree.css" media="all"/>
+    <link rel="stylesheet" href="/resources/layui_ext/dtree/font/dtreefont.css" media="all"/>
+    <style type="text/css">
+        .layui-table-cell {
+            height: auto !important;
+            white-space: normal;
+        }
+        .layui-table-cell img {
+            width: 60px;
+            height: 60px;
+            border-radius:50%;
+        }
+    </style>
+</head>
+<!--子页面需要引入 layui.css public.css layui.js body 需要 class="childrenBody" 就是一个边距-->
+<body class="childrenBody">
+<!--查询条件开始-->
+<fieldset class="layui-elem-field" align="center">
+    <legend>查询条件</legend>
+    <div class="layui-field-box">
+        <form action="" lay-filter="doSearchForm" id="doSearchForm" class="layui-form layui-form-pane" method="get">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">饭堂部门</label>
+                    <div class="layui-input-inline">
+                        <select name="staffDeptId"  lay-filter="staffDeptSelect" id="staffDeptSelect">
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">领导</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="leaderName" placeholder="请输入领导姓名" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">开始日期</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="startTime" id="startTime" readonly placeholder="yyyy-MM-dd HH:mm:ss" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">结束日期</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="endTime" id="endTime" readonly placeholder="yyyy-MM-dd HH:mm:ss" class="layui-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">员工职位</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="staffPosition" placeholder="请输入员工职位" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">员工姓名</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="staffName" placeholder="请输入员工姓名" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <button type="button" class="layui-btn layui-icon layui-icon-search" lay-submit="" lay-filter="doSearch">查询
+                    </button>
+                    <button type="reset" class="layui-btn layui-icon layui-icon-refresh layui-btn-warm">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</fieldset>
+<!--查询条件结束-->
+
+<!--数据表格开始-->
+<div>
+    <!--数据表格-->
+    <table class="layui-hide" id="mainTable" lay-filter="mainTable"></table>
+    <!--数据表格上面的工具栏 批量删除-->
+    <div id="mainToolBar" style="display: none;">
+        <button type="button" class="layui-btn layui-icon layui-icon-survey" lay-event="add">添加饭堂员工</button>
+    </div>
+    <!--数据表格右边的操作 删除-->
+    <div id="mainRowBar" style="display: none;">
+        <button type="button" class="layui-btn layui-icon layui-icon-list layui-btn-sm layui-btn-normal" lay-event="view">查看</button>
+        <button type="button" class="layui-btn layui-icon layui-icon-edit layui-btn-sm" lay-event="update">更新</button>
+        <button type="button" class="layui-btn layui-icon layui-icon-delete layui-btn-danger layui-btn-sm" lay-event="del">删除</button>
+    </div>
+</div>
+<!--数据表格结束-->
+
+<!--添加和修改的弹出层开始-->
+<div style="display: none;margin: 20px;" id="addOrUpdateDiv">
+    <form action="" class="layui-form layui-form-pane" id="dataForm" lay-filter="dataForm">
+        <div class="layui-col-md9">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">饭堂部门</label>
+                    <div class="layui-input-inline">
+                        <select name="staffDeptId"  lay-filter="deptSelect" id="deptSelect">
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">领导</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="leaderName" id="leaderNameInput" placeholder="请输入领导姓名" class="layui-input">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">员工姓名</label>
+                    <div class="layui-input-inline" >
+                        <input type="hidden" name="staffId" id="staffId">
+                        <input type="text" name="staffName" lay-verify="required" placeholder="请输入员工姓名" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">性别</label>
+                    <div class="layui-input-inline">
+                        <input type="radio" name="staffSex" value="1" title="男" checked="">
+                        <input type="radio" name="staffSex" value="0" title="女">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">入职时间</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="staffHiredate" lay-verify="required" id="staffHiredate" readonly placeholder="yyyy-MM-dd HH:mm:ss" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">员工职位</label>
+                    <div class="layui-input-inline" >
+                        <input type="text" name="staffPosition" lay-verify="required" value="普通员工" placeholder="请输入员工职位" class="layui-input">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-col-md3">
+            <div class="layui-form-item">
+                <div class="layui-upload">
+                    <div class="layui-upload-list" id="upload">
+                        <img class="layui-upload-img" id="previewImg" style="width: 150px;height: 150px;">
+                    </div>
+                    <input type="hidden" class="layui-input" id="staffImgPath" name="staffImgPath">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">员工地址</label>
+            <div class="layui-input-block">
+                <input type="text" name="staffAddress" placeholder="请输入员工地址" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">员工备注</label>
+            <div class="layui-input-block">
+                <textarea name="staffRemark" placeholder="请输入员工备注" class="layui-textarea"></textarea>
+            </div>
+        </div>
+
+
+        <div class="layui-inline" style="float: right;">
+            <!--lay-submit 和 layui-form 可以触发表单的验证-->
+            <button type="button" class="layui-btn layui-icon layui-icon-search layui-btn-sm" lay-submit="" lay-filter="doSubmit" id="doSubmit">提交</button>
+            <button type="reset" class="layui-btn layui-icon layui-icon-refresh layui-btn-sm layui-btn-warm">重置</button>
+        </div>
+    </form>
+</div>
+<!--添加和修改的弹出层结束-->
+
+<!--查看弹出层开始-->
+<div style="display: none;margin: 20px;" id="viewDiv">
+    <form action="" method="post" class="layui-form layui-form-pane" id="viewForm" lay-filter="viewForm">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">饭堂部门</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="deptName" disabled class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">领导</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="leaderName" disabled class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">员工姓名</label>
+                <div class="layui-input-inline" >
+                    <input type="text" name="staffName" disabled class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">性别</label>
+                <div class="layui-input-inline">
+                    <input type="radio" name="staffSex" disabled value="1" title="男" checked="">
+                    <input type="radio" name="staffSex" disabled value="0" title="女">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">入职时间</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="staffHiredate" readonly disabled class="layui-input">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">员工职位</label>
+                <div class="layui-input-inline" >
+                    <input type="text" name="staffPosition" disabled class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">员工地址</label>
+            <div class="layui-input-block">
+                <input type="text" name="staffAddress" disabled class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">员工备注</label>
+            <div class="layui-input-block">
+                <textarea name="staffRemark" disabled class="layui-textarea"></textarea>
+            </div>
+        </div>
+
+        <div class="layui-form-item">
+            <label class="layui-form-label">员工图片</label>
+            <div class="layui-input-block">
+                <div class="layui-upload">
+                    <div class="layui-upload-list">
+                        <img class="layui-upload-img" id="viewImg" style="width: 200px;height: 200px;">
+                    </div>
+                    <input type="hidden" class="layui-input" id="staffImgPath" name="staffImgPath">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<!--查看弹出层结束-->
+
+</body>
+<script type="text/javascript" src="/resources/layui/layui.js"></script>
+<script type="text/javascript" src="/resources/layui_ext/dist/dtree.js"></script>
+<script>
+    // 提升作用域，dtree适用，为了其他页面能调用该对象（两个页面必须有一个公共的父页面）
+    var tableIns;
+    // 因为添加部门需要使用到下拉树 所以要扩展dtree
+    layui.use(["jquery", "form", "layer", "table", "laydate", 'upload'], function () {
+        // jq
+        var $ = layui.jquery;
+        // 表单
+        var form = layui.form;
+        // 弹出层
+        var layer = layui.layer;
+        // 数据表格
+        var table = layui.table;
+        // 日期
+        var laydate = layui.laydate;
+        // 文件上传
+        var upload = layui.upload;
+
+        // 渲染
+        laydate.render({
+           elem: "#startTime",
+           type: "datetime"
+        });
+        laydate.render({
+            elem: "#endTime",
+            type: "datetime"
+        });
+        laydate.render({
+            elem: "#staffHiredate",
+            type: "datetime"
+        });
+
+        // 加载数据表格数据
+        tableIns = table.render({
+            elem: '#mainTable'
+            , url: '/staff/staffs'
+            , toolbar: '#mainToolBar' //开启头部工具栏，并为其绑定左侧模板
+            , title: '饭堂员工数据表'
+            , height: 'full-200'
+            , page: true
+            , cols: [ [
+                {field: 'staffId', title: 'ID', sort: true, align: 'center'}
+                , {field: 'staffName', title: '员工姓名', align: 'center', sort: true}
+                , {field: 'staffAddress', title: '员工地址', align: 'center'}
+                , {field: 'staffSex', title: '员工性别', align: 'center', sort: true, templet: function(obj){
+                        return obj.staffSex == 1 ? '<font color="blue">男</font>' : '<font color="red">女</font>'
+                    }}
+                , {field: 'staffHiredate', title: '员工入职时间', align: 'center', sort: true, width: '10%'}
+                , {field: 'staffPosition', title: '员工职位', align: 'center'}
+                , {field: 'deptName', title: '员工部门', align: 'center', sort: true}
+                , {field: 'leaderName', title: '员工直系领导', align: 'center'}
+                , {
+                    field: 'staffImgPath', title: '员工照片', align: 'center', templet: function (obj) {
+                        return "<img src=/file/showImageByPath?path=" + obj.staffImgPath + ">";
+                    }
+                }
+                , {field: 'staffRemark', title: '员工备注', align: 'center', width: "15%"}
+                , {field: 'right', title: '操作', toolbar: '#mainRowBar', align: 'center', fixed: 'right', width: "20%"}
+            ] ]
+            , done: function (res, curr, count) {   // 处理在某页只有一条数据删除之后 显示无数据
+                if (res.data.length == 0 && curr != 1) {
+                    tableIns.reload({
+                        page: {
+                            curr: (curr - 1)
+                        }
+                    })
+                }
+            }
+        });
+
+        // 渲染部门下拉框
+        $.get("/dept/loadAllDept", function (res) {
+            var staffDeptSelect = $("#staffDeptSelect");
+            var html = "<option value='0'>请选择饭堂部门</option>";
+            $.each(res.data, function (index, item) {
+                html+="<option value="+item.deptId+">"+item.deptName+"</option>";
+            });
+            staffDeptSelect.html(html);
+            form.render("select");
+        });
+
+        // 模糊查询
+        form.on("submit(doSearch)", function (data) {
+            // 数据表格重载
+            tableIns.reload({
+                // url 默认为 tableIns里面的url
+                url: "/staff/staffs",
+                // 这里是where条件   data.field表示表单中的数据
+                where: data.field,
+                // 分页，从第一页开始查
+                page: {
+                    curr: 1
+                }
+            });
+            // 阻止表单提交
+            return false;
+        });
+
+        // 监控工具栏的事件 批量删除、添加
+        table.on("toolbar(mainTable)", function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    openAddLayer();
+                    break;
+            }
+        });
+
+        // 监控行工具的事件 查看、更新、删除、分配权限
+        table.on("tool(mainTable)", function (obj) {
+            // 获取数据
+            var data = obj.data;
+            switch (obj.event) {
+                case 'update':
+                    openUpdateLayer(data);
+                    break;
+                case 'del':
+                    del(data);
+                    break;
+                case 'view':
+                    view(data);
+                    break;
+            }
+        });
+
+        // 用来关闭添加或更新的弹出层
+        var mainIndex;
+        // 如果是通过添加按钮打开的弹出层就赋予url为添加的url, 否则就赋予修改的url
+        var url;
+        // 修改和添加的 请求类型 添加 post  修改 put
+        var addOrUpdateType;
+        // 打开添加弹出层
+        function openAddLayer() {
+            mainIndex = layer.open({
+                // type 1 代表页面层
+                // content 代表 html
+                // area 表示 宽 高
+                type: 1,
+                content: $("#addOrUpdateDiv"),
+                area: ["950px", "700px"],
+                title: "添加饭堂员工",
+                success: function () {
+                    // 清空表单数据
+                    var dataForm = $("#dataForm")[0];
+                    dataForm.reset();
+
+                    // 清空隐藏域的数据
+                    $("#staffId").val("");
+                    // 清空图片路径
+                    var imgPath = $("#staffImgPath");
+                    imgPath.val("default.jpg");
+                    $('#previewImg').attr('src', '/file/showImageByPath?path=upload.jpg');
+                    // 添加的url
+                    url = "/staff/staff";
+                    addOrUpdateType = "post";
+
+                    // 渲染部门下拉框
+                    $.get("/dept/loadAllDept", function (res) {
+                        var deptSelect = $("#deptSelect");
+                        var html = "<option value='0'>请选择饭堂部门</option>";
+                        $.each(res.data, function (index, item) {
+                            html+="<option value="+item.deptId+">"+item.deptName+"</option>";
+                        });
+                        deptSelect.html(html);
+                        form.render("select");
+                    });
+
+                }
+            });
+        }
+
+        // 处理添加时 输入的领导不存在
+        $("#leaderNameInput").blur(function () {
+           var leaderName = $("#leaderNameInput").val();
+           $.get("/staff/queryLeaderByLeaderName", {leaderName: leaderName}, function (res) {
+                if (res.code != 200) {
+                    layer.msg(res.msg);
+                    $("#leaderNameInput").focus();
+                }
+           });
+        });
+
+        // 打开修改的弹出层
+        function openUpdateLayer(data) {
+            mainIndex = layer.open({
+                // type 1 代表页面层
+                // content 代表 html
+                // area 表示 宽 高
+                type: 1,
+                content: $("#addOrUpdateDiv"),
+                area: ["950px", "700px"],
+                title: "修改饭堂员工",
+                success: function () {
+                    // 添加的url
+                    url = "/staff/staff";
+                    addOrUpdateType = "put";
+                    // 填充数据
+                    form.val("dataForm", data);
+                    // 回显图片
+                    if (data.staffImgPath == null) {
+                        $('#previewImg').attr('src', '/file/showImageByPath?path=default.jpg');
+                    } else {
+                        $('#previewImg').attr('src', '/file/showImageByPath?path=' + data.staffImgPath);
+                    }
+                    // 回显部门下拉框数据
+                    $.get("/dept/loadAllDept", function (res) {
+                        var deptSelect = $("#deptSelect");
+                        var html = "<option value='0'>请选择饭堂部门</option>";
+                        $.each(res.data, function (index, item) {
+                            if (data.staffDeptId == item.deptId) {
+                                html+="<option selected value="+item.deptId+">"+item.deptName+"</option>";
+                            } else {
+                                html+="<option value="+item.deptId+">"+item.deptName+"</option>";
+                            }
+                        });
+                        deptSelect.html(html);
+                        form.render("select");
+                    });
+                },
+                cancel: function () {
+
+                }
+            });
+        }
+
+        // 添加 和 修改
+        form.on("submit(doSubmit)", function (data) {
+            // 构造参数
+            $.ajax({
+                url: url,
+                data: data.field,
+                type: addOrUpdateType,
+                success: function (res) {
+                    if (res.code == 200) {
+                        // 需要重新渲染数据表格
+                        tableIns.reload();
+                    }
+                    // 提示信息
+                    layer.msg(res.msg, {icon: 1});
+                    // 关闭弹出层
+                    layer.close(mainIndex);
+                }
+            });
+        });
+
+        // 删除
+        function del(data) {
+            layer.confirm("你确定要删除【" + data.staffName + "】员工吗？", {icon: 3, title: "提示"}, function (index) {
+                deleteDept(data);
+                // 关闭
+                layer.close(index);
+            });
+
+        }
+
+        // 真正的删除
+        function deleteDept(data) {
+            // 删除 Restful 删除
+            $.ajax({
+                type: 'delete',
+                url: '/staff/staff/' + data.staffId,
+                success: function (res) {
+                    if (res.code == 200) {
+                        // 需要重新渲染数据表格
+                        tableIns.reload();
+                    }
+                    // 提示信息
+                    layer.msg(res.msg, {icon: 1});
+                }
+            });
+        }
+
+        //普通图片上传
+        var uploadInst = upload.render({
+            elem: '#upload'
+            , url: '/file/upload' //改成您自己的上传接口
+            , field: "fileName"
+            , accept: 'images'
+            , acceptMime: 'image/jpg, image/jpeg'
+            , exts: 'jpg|jpeg'
+            , size: 1024 * 5
+            , before: function (obj) {
+                //预读本地文件示例，不支持ie8
+                obj.preview(function (index, file, result) {
+                    $('#previewImg').attr('src', result); //图片链接（base64）
+                });
+            }
+            , done: function (res) {
+                // 上传图片成功
+                if (res.code == 200) {
+                    // 给隐藏域赋值
+                    var imgPath = $("#staffImgPath");
+                    imgPath.val(res.msg);
+                } else {
+                    //上传图片失败
+                    layer.msg(res.msg);
+                }
+            }
+            , error: function () {
+                //演示失败状态，并实现重传
+
+            }
+        });
+
+        function view(data) {
+            mainIndex = layer.open({
+                // type 1 代表页面层
+                // content 代表 html
+                // area 表示 宽 高
+                type: 1,
+                content: $("#viewDiv"),
+                area: ["800px", "650px"],
+                title: "查看饭堂员工详细信息",
+                success: function () {
+                    // 填充数据
+                    form.val("viewForm", data);
+                    // 回显图片
+                    if (data.staffImgPath == null) {
+                        $('#viewImg').attr('src', '/file/showImageByPath?path=default.jpg');
+                    } else {
+                        $('#viewImg').attr('src', '/file/showImageByPath?path=' + data.staffImgPath);
+                    }
+                },
+                cancel: function () {
+
+                }
+            });
+        }
+
+    });
+
+</script>
+</html>

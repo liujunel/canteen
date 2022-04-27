@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.canteen.sys.mapper.StaffMapper">
+  <resultMap id="BaseResultMap" type="com.canteen.sys.domain.Staff">
+    <!--@mbg.generated-->
+    <!--@Table tb_staff-->
+    <id column="staff_id" jdbcType="INTEGER" property="staffId" />
+    <result column="staff_name" jdbcType="VARCHAR" property="staffName" />
+    <result column="staff_address" jdbcType="VARCHAR" property="staffAddress" />
+    <result column="staff_sex" jdbcType="CHAR" property="staffSex" />
+    <result column="staff_remark" jdbcType="VARCHAR" property="staffRemark" />
+    <result column="staff_hiredate" jdbcType="TIMESTAMP" property="staffHiredate" />
+    <result column="staff_mgr" jdbcType="INTEGER" property="staffMgr" />
+    <result column="staff_position" jdbcType="VARCHAR" property="staffPosition" />
+    <result column="staff_dept_id" jdbcType="INTEGER" property="staffDeptId" />
+    <result column="staff_img_path" jdbcType="VARCHAR" property="staffImgPath" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    staff_id, staff_name, staff_address, staff_sex, staff_remark, staff_hiredate, staff_mgr, 
+    staff_position, staff_dept_id, staff_img_path
+  </sql>
+    <select id="queryLeaderByLeaderName" resultType="com.canteen.sys.domain.Staff">
+      select * from tb_staff where staff_name = #{leaderName}
+    </select>
+</mapper>

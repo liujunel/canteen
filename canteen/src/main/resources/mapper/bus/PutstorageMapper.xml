@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.canteen.bus.mapper.PutstorageMapper">
+  <resultMap id="BaseResultMap" type="com.canteen.bus.domain.Putstorage">
+    <!--@mbg.generated-->
+    <!--@Table tb_putstorage-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="putstorage_no" jdbcType="VARCHAR" property="putstorageNo" />
+    <result column="material_id" jdbcType="INTEGER" property="materialId" />
+    <result column="putstorage_num" jdbcType="INTEGER" property="putstorageNum" />
+    <result column="putstorage_price" jdbcType="DECIMAL" property="putstoragePrice" />
+    <result column="putstorage_money" jdbcType="DECIMAL" property="putstorageMoney" />
+    <result column="putstorage_unit" jdbcType="VARCHAR" property="putstorageUnit" />
+    <result column="purchase_company" jdbcType="VARCHAR" property="purchaseCompany" />
+    <result column="purchase_user" jdbcType="VARCHAR" property="purchaseUser" />
+    <result column="purchase_id" jdbcType="INTEGER" property="purchaseId" />
+    <result column="putstorage_user" jdbcType="VARCHAR" property="putstorageUser" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="putstorage_status" jdbcType="CHAR" property="putstorageStatus" />
+    <result column="note" jdbcType="VARCHAR" property="note" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, putstorage_no, material_id, putstorage_num, putstorage_price, putstorage_money, 
+    putstorage_unit, purchase_company, purchase_user, purchase_id, putstorage_user, create_time, 
+    putstorage_status, note
+  </sql>
+</mapper>

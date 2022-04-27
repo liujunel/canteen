@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.canteen.sys.mapper.PermissionMapper">
+  <resultMap id="BaseResultMap" type="com.canteen.sys.domain.Permission">
+    <!--@mbg.generated-->
+    <!--@Table tb_permission-->
+    <id column="permission_id" jdbcType="INTEGER" property="permissionId" />
+    <result column="permission_pid" jdbcType="INTEGER" property="permissionPid" />
+    <result column="permission_type" jdbcType="VARCHAR" property="permissionType" />
+    <result column="permission_name" jdbcType="VARCHAR" property="permissionName" />
+    <result column="permission_icon" jdbcType="VARCHAR" property="permissionIcon" />
+    <result column="permission_href" jdbcType="VARCHAR" property="permissionHref" />
+    <result column="permission_spread" jdbcType="INTEGER" property="permissionSpread" />
+    <result column="permission_percode" jdbcType="VARCHAR" property="permissionPercode" />
+    <result column="permission_order_num" jdbcType="INTEGER" property="permissionOrderNum" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    permission_id, permission_pid, permission_type, permission_name, permission_icon, 
+    permission_href, permission_spread, permission_percode, permission_order_num
+  </sql>
+    <select id="queryPermissionByPid" resultType="java.lang.Integer" parameterType="list">
+      select permission_id from tb_permission where permission_pid in
+      <foreach collection="permissionMenu" open="(" separator="," close=")" item="item">
+        #{item}
+      </foreach>
+    </select>
+</mapper>

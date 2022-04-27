@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.canteen.bus.mapper.RecipeMapper">
+  <resultMap id="BaseResultMap" type="com.canteen.bus.domain.Recipe">
+    <!--@mbg.generated-->
+    <!--@Table tb_recipe-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="recipe_name" jdbcType="VARCHAR" property="recipeName" />
+    <result column="recipe_price" jdbcType="DECIMAL" property="recipePrice" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="note" jdbcType="VARCHAR" property="note" />
+    <result column="recipe_category_id" jdbcType="INTEGER" property="recipeCategoryId" />
+    <result column="recipe_img_path" jdbcType="VARCHAR" property="recipeImgPath" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, recipe_name, recipe_price, create_time, note, recipe_category_id, recipe_img_path
+  </sql>
+
+</mapper>

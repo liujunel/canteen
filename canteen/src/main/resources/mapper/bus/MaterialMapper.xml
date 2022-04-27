@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.canteen.bus.mapper.MaterialMapper">
+  <resultMap id="BaseResultMap" type="com.canteen.bus.domain.Material">
+    <!--@mbg.generated-->
+    <!--@Table tb_material-->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="material_name" jdbcType="VARCHAR" property="materialName" />
+    <result column="material_num" jdbcType="INTEGER" property="materialNum" />
+    <result column="material_unit" jdbcType="VARCHAR" property="materialUnit" />
+    <result column="material_category_id" jdbcType="INTEGER" property="materialCategoryId" />
+    <result column="expiration_date" jdbcType="TIMESTAMP" property="expirationDate" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="note" jdbcType="VARCHAR" property="note" />
+    <result column="material_img_path" jdbcType="VARCHAR" property="materialImgPath" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    id, material_name, material_num, material_unit, material_category_id, expiration_date, 
+    create_time, note, material_img_path
+  </sql>
+    <select id="todayStatistics" resultType="java.util.Map">
+      select material_num as value, material_name as name from tb_material;
+    </select>
+    <select id="weekOutstorageStatistics" resultType="java.util.Map">
+      select outstorage_num as value, material_id as name from tb_outstorage
+        where outstorage_time between #{startTime} and #{endTime} and outstorage_status = "2";
+    </select>
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.canteen.sys.mapper.RoleMapper">
+    <resultMap id="BaseResultMap" type="com.canteen.sys.domain.Role">
+        <!--@mbg.generated-->
+        <!--@Table tb_role-->
+        <id column="role_id" jdbcType="INTEGER" property="roleId"/>
+        <result column="role_name" jdbcType="VARCHAR" property="roleName"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        role_id, role_name
+    </sql>
+    <select id="queryRoleByFacultyNumber" resultType="java.lang.Integer">
+      select * from tb_role_faculty where faculty_number = #{facultyNumber}
+    </select>
+    <insert id="insertRoleFacultyByRoleIdAndFacultyNumber">
+        insert into tb_role_faculty (role_id, faculty_number) values (#{roleId}, #{facultyNumber})
+    </insert>
+    <delete id="removeRoleFacultyByFacultyNumber">
+        delete from tb_role_faculty where faculty_number = #{facultyNumber}
+    </delete>
+    <select id="queryRoleHasFaculty" resultType="java.lang.Integer">
+        select faculty_number from tb_role_faculty where role_id = #{roleId}
+    </select>
+    <delete id="removeRolePermissionByRoleId">
+        delete from tb_role_permission where role_id = #{roleId}
+    </delete>
+    <insert id="insertRolePermissionByRoleIdAndPermissionId">
+        insert into tb_role_permission (role_id, permission_id) values (#{roleId}, #{permissionId})
+    </insert>
+    <select id="queryPermissionByRoleId" resultType="java.lang.Integer">
+        select permission_id from tb_role_permission where role_id = #{roleId}
+    </select>
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.canteen.bus.mapper.CommentMapper">
+  <resultMap id="BaseResultMap" type="com.canteen.bus.domain.Comment">
+    <!--@mbg.generated-->
+    <!--@Table tb_comment-->
+    <id column="comment_id" jdbcType="INTEGER" property="commentId" />
+    <result column="recipe_id" jdbcType="INTEGER" property="recipeId" />
+    <result column="content" jdbcType="LONGVARCHAR" property="content" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="comment_faculty_number" jdbcType="INTEGER" property="commentFacultyNumber" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    comment_id, recipe_id, content, create_time, comment_faculty_number
+  </sql>
+</mapper>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!--可全部复制无bug-->
+    <meta charset="UTF-8">
+    <title>食材类别管理</title>
+    <link rel="stylesheet" href="/resources/layui/css/layui.css" media="all"/>
+    <link rel="stylesheet" href="/resources/css/public.css" media="all"/>
+    <link rel="stylesheet" href="/resources/layui_ext/dtree/dtree.css" media="all"/>
+    <link rel="stylesheet" href="/resources/layui_ext/dtree/font/dtreefont.css" media="all"/>
+</head>
+<!--子页面需要引入 layui.css public.css layui.js body 需要 class="childrenBody" 就是一个边距-->
+<body class="childrenBody">
+<!--查询条件开始-->
+<fieldset class="layui-elem-field" align="center">
+    <legend>查询条件</legend>
+    <div class="layui-field-box">
+        <form action="" lay-filter="doSearchForm" id="doSearchForm" class="layui-form layui-form-pane" method="get">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">食材类别</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="materialCategoryName" placeholder="请输入要查询的食材类别" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button type="button" class="layui-btn layui-icon layui-icon-search" lay-submit="" lay-filter="doSearch">查询
+                    </button>
+                    <button type="reset" class="layui-btn layui-icon layui-icon-refresh layui-btn-warm">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</fieldset>
+<!--查询条件结束-->
+
+<!--数据表格开始-->
+<div>
+    <!--数据表格-->
+    <table class="layui-hide" id="mainTable" lay-filter="mainTable"></table>
+    <!--数据表格上面的工具栏 批量删除-->
+    <div id="mainToolBar" style="display: none;">
+        <button type="button" class="layui-btn layui-icon layui-icon-survey" lay-event="add">添加食材类别</button>
+    </div>
+    <!--数据表格右边的操作 删除-->
+    <div id="mainRowBar" style="display: none;">
+        <button type="button" class="layui-btn layui-icon layui-icon-edit layui-btn-sm" lay-event="update">更新</button>
+        <button type="button" class="layui-btn layui-icon layui-icon-delete layui-btn-danger layui-btn-sm" lay-event="del">删除</button>
+    </div>
+</div>
+<!--数据表格结束-->
+
+<!--添加和修改的弹出层开始-->
+<div style="display: none;margin: 20px;" id="addOrUpdateDiv">
+    <form action="" method="post" class="layui-form layui-form-pane" id="dataForm" lay-filter="dataForm">
+        <div class="layui-form-item">
+            <label class="layui-form-label">食材类别</label>
+            <div class="layui-input-block">
+                <!--需要 隐藏id 用来修改-->
+                <input type="hidden" name="id" id="id">
+                <input type="text" name="materialCategoryName" placeholder="请输入食材类别" lay-verify="required" class="layui-input">
+            </div>
+        </div>
+
+        <div class="layui-inline" style="float: right;">
+            <!--lay-submit 和 layui-form 可以触发表单的验证-->
+            <button type="button" class="layui-btn layui-icon layui-icon-search layui-btn-sm" lay-submit="" lay-filter="doSubmit" id="doSubmit">提交</button>
+            <button type="reset" class="layui-btn layui-icon layui-icon-refresh layui-btn-sm layui-btn-warm">重置</button>
+        </div>
+    </form>
+</div>
+<!--添加和修改的弹出层结束-->
+
+</body>
+<script type="text/javascript" src="/resources/layui/layui.js"></script>
+<script type="text/javascript" src="/resources/layui_ext/dist/dtree.js"></script>
+<script>
+    // 提升作用域，dtree适用，为了其他页面能调用该对象（两个页面必须有一个公共的父页面）
+    var tableIns;
+    // 因为添加部门需要使用到下拉树 所以要扩展dtree
+    layui.use(["jquery", "form", "layer", "table"], function () {
+        // jq
+        var $ = layui.jquery;
+        // 表单
+        var form = layui.form;
+        // 弹出层
+        var layer = layui.layer;
+        // 数据表格
+        var table = layui.table;
+
+        // 加载数据表格数据
+        tableIns = table.render({
+            elem: '#mainTable'
+            , url: '/materialCategory/materialCategorys'
+            , toolbar: '#mainToolBar' //开启头部工具栏，并为其绑定左侧模板
+            , title: '食材类别数据表'
+            , page: true
+            , cols: [ [
+                {field: 'id', title: 'ID', sort: true, align: 'center'}
+                , {field: 'materialCategoryName', title: '食材类别名称', align: 'center'}
+                , {field: 'right', title: '操作', toolbar: '#mainRowBar', align: 'center', fixed: 'right'}
+            ] ]
+            , done: function (res, curr, count) {   // 处理在某页只有一条数据删除之后 显示无数据
+                if (res.data.length == 0 && curr != 1) {
+                    tableIns.reload({
+                        page: {
+                            curr: (curr - 1)
+                        }
+                    })
+                }
+            }
+        });
+
+        // 模糊查询
+        form.on("submit(doSearch)", function (data) {
+            // 数据表格重载
+            tableIns.reload({
+                // url 默认为 tableIns里面的url
+                url: "/materialCategory/materialCategorys",
+                // 这里是where条件   data.field表示表单中的数据
+                where: data.field,
+                // 分页，从第一页开始查
+                page: {
+                    curr: 1
+                }
+            });
+            // 阻止表单提交
+            return false;
+        });
+
+        // 监控工具栏的事件 批量删除、添加
+        table.on("toolbar(mainTable)", function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    openAddLayer();
+                    break;
+            }
+        });
+
+        // 监控行工具的事件 查看、更新、删除、分配权限
+        table.on("tool(mainTable)", function (obj) {
+            // 获取数据
+            var data = obj.data;
+            switch (obj.event) {
+                case 'update':
+                    openUpdateLayer(data);
+                    break;
+                case 'del':
+                    del(data);
+                    break;
+            }
+        });
+
+        // 用来关闭添加或更新的弹出层
+        var mainIndex;
+        // 如果是通过添加按钮打开的弹出层就赋予url为添加的url, 否则就赋予修改的url
+        var url;
+        // 修改和添加的 请求类型 添加 post  修改 put
+        var addOrUpdateType;
+        // 打开添加弹出层
+        function openAddLayer() {
+            mainIndex = layer.open({
+                // type 1 代表页面层
+                // content 代表 html
+                // area 表示 宽 高
+                type: 1,
+                content: $("#addOrUpdateDiv"),
+                area: ["400px", "200px"],
+                title: "添加食材类别",
+                success: function () {
+                    // 清空表单数据
+                    var dataForm = $("#dataForm")[0];
+                    dataForm.reset();
+                    $("#id").val("");
+                    // 添加的url
+                    url = "/materialCategory/materialCategory";
+                    addOrUpdateType = "post";
+                }
+            });
+        }
+
+        // 打开修改的弹出层
+        function openUpdateLayer(data) {
+            mainIndex = layer.open({
+                // type 1 代表页面层
+                // content 代表 html
+                // area 表示 宽 高
+                type: 1,
+                content: $("#addOrUpdateDiv"),
+                area: ["400px", "200px"],
+                title: "修改食材类别",
+                success: function () {
+                    // 添加的url
+                    url = "/materialCategory/materialCategory";
+                    addOrUpdateType = "put";
+                    // 填充数据
+                    form.val("dataForm", data);
+                }
+            });
+        }
+
+        // 添加 和 修改
+        form.on("submit(doSubmit)", function (data) {
+            console.log(data.field);
+            // 构造参数
+            $.ajax({
+                url: url,
+                data: data.field,
+                type: addOrUpdateType,
+                success: function (res) {
+                    if (res.code == 200) {
+                        // 提示信息
+                        layer.msg(res.msg, {icon: 1});
+                        // 需要重新渲染数据表格
+                        tableIns.reload();
+                        // 关闭弹出层
+                        layer.close(mainIndex);
+                    } else {
+                        // 提示信息
+                        layer.msg(res.msg, {icon: 2});
+                    }
+                }
+            });
+        });
+
+        // 删除
+        function del(data) {
+            $.get("/materialCategory/queryHasMaterialById", {id: data.id}, function (res) {
+                if (res.code == 200) {
+                    layer.confirm("你确定要删除【"+data.materialCategoryName+"】食材类别吗？", {icon: 3, title: "提示"}, function (index) {
+                        deleteDept(data);
+                        // 关闭
+                        layer.close(index);
+                    });
+                }else {
+                    layer.msg(res.msg);
+                }
+            });
+
+        }
+
+        // 真正的删除
+        function deleteDept(data) {
+            // 删除 Restful 删除
+            $.ajax({
+                type: 'delete',
+                url: '/materialCategory/materialCategory/' + data.id,
+                success: function (res) {
+                    if (res.code == 200) {
+                        // 需要重新渲染数据表格
+                        tableIns.reload();
+                    }
+                    // 提示信息
+                    layer.msg(res.msg, {icon: 1});
+                }
+            });
+        }
+
+    });
+
+</script>
+</html>

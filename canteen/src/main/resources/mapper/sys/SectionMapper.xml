@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.canteen.sys.mapper.SectionMapper">
+  <resultMap id="BaseResultMap" type="com.canteen.sys.domain.Section">
+    <!--@mbg.generated-->
+    <!--@Table tb_section-->
+    <id column="section_id" jdbcType="INTEGER" property="sectionId" />
+    <result column="section_name" jdbcType="VARCHAR" property="sectionName" />
+    <result column="section_address" jdbcType="VARCHAR" property="sectionAddress" />
+    <result column="section_iphone" jdbcType="VARCHAR" property="sectionIphone" />
+    <result column="section_note" jdbcType="VARCHAR" property="sectionNote" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    <!--@mbg.generated-->
+    section_id, section_name, section_address, section_iphone, section_note
+  </sql>
+</mapper>

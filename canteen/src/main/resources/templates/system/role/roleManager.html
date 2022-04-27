@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>角色管理</title>
+    <link rel="stylesheet" href="/resources/layui/css/layui.css" media="all"/>
+    <link rel="stylesheet" href="/resources/css/public.css" media="all"/>
+    <link rel="stylesheet" href="/resources/layui_ext/dtree/dtree.css" media="all"/>
+    <link rel="stylesheet" href="/resources/layui_ext/dtree/font/dtreefont.css" media="all"/>
+</head>
+<!--子页面需要引入 layui.css public.css layui.js body 需要 class="childrenBody" 就是一个边距-->
+<body class="childrenBody">
+<!--查询条件开始-->
+<fieldset class="layui-elem-field" align="center">
+    <legend>查询条件</legend>
+    <div class="layui-field-box">
+        <form action="" lay-filter="doSearchForm" id="doSearchForm" class="layui-form layui-form-pane" method="get">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">角色名</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="roleName" placeholder="请输入角色名" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button type="button" class="layui-btn layui-icon layui-icon-search" lay-submit="" lay-filter="doSearch">查询
+                    </button>
+                    <button type="reset" class="layui-btn layui-icon layui-icon-refresh layui-btn-warm">重置</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</fieldset>
+<!--查询条件结束-->
+
+<!--数据表格开始-->
+<div>
+    <!--数据表格-->
+    <table class="layui-hide" id="mainTable" lay-filter="mainTable"></table>
+    <!--数据表格上面的工具栏 批量删除-->
+    <div id="mainToolBar" style="display: none;">
+        <button type="button" class="layui-btn layui-icon layui-icon-survey" lay-event="add">添加角色</button>
+    </div>
+    <!--数据表格右边的操作 删除-->
+    <div id="mainRowBar" style="display: none;">
+        <button type="button" class="layui-btn layui-icon layui-icon-edit layui-btn-sm" lay-event="update">更新</button>
+        <button type="button" class="layui-btn layui-icon layui-icon-delete layui-btn-danger layui-btn-sm" lay-event="del">删除</button>
+        <button type="button" class="layui-btn layui-icon layui-icon-key layui-btn-normal layui-btn-sm" lay-event="assignRole">分配权限</button>
+    </div>
+</div>
+<!--数据表格结束-->
+
+<!--添加和修改的弹出层开始-->
+<div style="display: none;margin: 20px;" id="addOrUpdateDiv">
+    <form action="" method="post" class="layui-form layui-form-pane" id="dataForm" lay-filter="dataForm">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">角色名</label>
+                <div class="layui-input-inline">
+                    <!--需要 隐藏id 用来修改-->
+                    <input type="hidden" name="roleId" id="roleId">
+                    <input type="text" name="roleName" placeholder="请输入角色名" lay-verify="required" id="roleName" class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-inline" style="float: right;">
+            <!--lay-submit 和 layui-form 可以触发表单的验证-->
+            <button type="button" class="layui-btn layui-icon layui-icon-search layui-btn-sm" lay-submit="" lay-filter="doSubmit" id="doSubmit">提交</button>
+            <button type="reset" class="layui-btn layui-icon layui-icon-refresh layui-btn-sm layui-btn-warm">重置</button>
+        </div>
+    </form>
+</div>
+<!--添加和修改的弹出层结束-->
+
+<!--分配权限开始-->
+<div style="display: none;margin: 20px;text-align: center" id="assignRoleDiv">
+    <!--数据表格-->
+    <table class="layui-hide" id="permissionTable" lay-filter="permissionTable"></table>
+</div>
+<!--分配权限结束-->
+
+</body>
+<script type="text/javascript" src="/resources/layui/layui.js"></script>
+<script type="text/javascript" src="/resources/layui_ext/dist/dtree.js"></script>
+<script>
+    // 提升作用域，dtree适用，为了其他页面能调用该对象（两个页面必须有一个公共的父页面）
+    var tableIns;
+    // 因为添加部门需要使用到下拉树 所以要扩展dtree
+    layui.use(["jquery", "form", "layer", "table"], function () {
+        // jq
+        var $ = layui.jquery;
+        // 表单
+        var form = layui.form;
+        // 弹出层
+        var layer = layui.layer;
+        // 数据表格
+        var table = layui.table;
+
+        // 加载数据表格数据
+        tableIns = table.render({
+            elem: '#mainTable'
+            , url: '/role/roles'
+            , toolbar: '#mainToolBar' //开启头部工具栏，并为其绑定左侧模板
+            , title: '角色数据表'
+            , page: true
+            , cols: [ [
+                {field: 'roleId', title: '角色id', sort: true, align: 'center'}
+                , {field: 'roleName', title: '角色名', align: 'center', sort: true}
+                , {field: 'right', title: '操作', toolbar: '#mainRowBar', align: 'center', fixed: 'right', width: "30%"}
+            ] ]
+            , done: function (res, curr, count) {   // 处理在某页只有一条数据删除之后 显示无数据
+                if (res.data.length == 0 && curr != 1) {
+                    tableIns.reload({
+                        page: {
+                            curr: (curr - 1)
+                        }
+                    })
+                }
+            }
+        });
+
+        // 模糊查询
+        form.on("submit(doSearch)", function (data) {
+            // 数据表格重载
+            tableIns.reload({
+                // url 默认为 tableIns里面的url
+                url: "/role/roles",
+                // 这里是where条件   data.field表示表单中的数据
+                where: data.field,
+                // 分页，从第一页开始查
+                page: {
+                    curr: 1
+                }
+            });
+            // 阻止表单提交
+            return false;
+        });
+
+        // 监控工具栏的事件 批量删除、添加
+        table.on("toolbar(mainTable)", function (obj) {
+            switch (obj.event) {
+                case 'add':
+                    openAddLayer();
+                    break;
+            }
+        });
+
+        // 监控行工具的事件 查看、更新、删除、分配权限
+        table.on("tool(mainTable)", function (obj) {
+            // 获取数据
+            var data = obj.data;
+            switch (obj.event) {
+                case 'update':
+                    openUpdateLayer(data);
+                    break;
+                case 'del':
+                    del(data);
+                    break;
+                case 'assignRole':
+                    assignRole(data);
+                    break;
+            }
+        });
+
+        // 用来关闭添加或更新的弹出层
+        var mainIndex;
+        // 如果是通过添加按钮打开的弹出层就赋予url为添加的url, 否则就赋予修改的url
+        var url;
+        // 修改和添加的 请求类型 添加 post  修改 put
+        var addOrUpdateType;
+        // 打开添加弹出层
+        function openAddLayer() {
+            mainIndex = layer.open({
+                // type 1 代表页面层
+                // content 代表 html
+                // area 表示 宽 高
+                type: 1,
+                content: $("#addOrUpdateDiv"),
+                area: ["400px", "200px"],
+                title: "添加角色",
+                success: function () {
+                    // 清空表单数据
+                    var dataForm = $("#dataForm")[0];
+                    dataForm.reset();
+                    // 清空隐藏域的数据
+                    $("#roleId").val("");
+                    // 添加的url
+                    url = "/role/role";
+                    addOrUpdateType = "post";
+                }
+            });
+        }
+
+        // 打开修改的弹出层
+        function openUpdateLayer(data) {
+            mainIndex = layer.open({
+                // type 1 代表页面层
+                // content 代表 html
+                // area 表示 宽 高
+                type: 1,
+                content: $("#addOrUpdateDiv"),
+                area: ["400px", "200px"],
+                title: "修改角色",
+                success: function () {
+                    // 添加的url
+                    url = "/role/role";
+                    addOrUpdateType = "put";
+                    // 填充数据
+                    form.val("dataForm", data);
+                },
+                cancel: function () {
+
+                }
+            });
+        }
+
+        // 添加 和 修改
+        form.on("submit(doSubmit)", function (data) {
+            // 构造参数
+            $.ajax({
+                url: url,
+                data: data.field,
+                type: addOrUpdateType,
+                success: function (res) {
+                    if (res.code == 200) {
+                        // 需要重新渲染数据表格
+                        tableIns.reload();
+                    }
+                    // 提示信息
+                    layer.msg(res.msg, {icon: 1});
+                    // 关闭弹出层
+                    layer.close(mainIndex);
+                }
+            });
+        });
+
+        // 删除
+        function del(data) {
+            $.get("/role/queryRoleHasFaculty", {roleId: data.roleId}, function (res) {
+                if (res.code == 200) {
+                    layer.msg("该角色当前有教工，请先将该角色的教工重新分配角色后在进行删除该角色的操作");
+                } else {
+                    layer.confirm("你确定要删除角色【" + data.roleName + "】吗？", {icon: 3, title: "提示"}, function (index) {
+                        deleteDept(data);
+                        // 关闭
+                        layer.close(index);
+                    });
+                }
+            });
+        }
+
+        // 真正的删除
+        function deleteDept(data) {
+            // 删除 Restful 删除
+            $.ajax({
+                type: 'delete',
+                url: '/role/role/' + data.roleId,
+                success: function (res) {
+                    if (res.code == 200) {
+                        // 需要重新渲染数据表格
+                        tableIns.reload();
+                    }
+                    // 提示信息
+                    layer.msg(res.msg, {icon: 1});
+                }
+            });
+        }
+
+        // 分配角色
+        function assignRole(data) {
+            mainIndex = layer.open({
+                // type 1 代表页面层
+                // content 代表 html
+                // area 表示 宽 高
+                type: 1,
+                content: $("#assignRoleDiv"),
+                area: ["600px", "500px"],
+                title: "分配权限",
+                success: function () {
+                    // 加载数据表格数据
+                    tableIns = table.render({
+                        elem: '#permissionTable'
+                        , url: '/menu/loadAllRootMenus'
+                        , where: {roleId: data.roleId}
+                        , toolbar: false //开启头部工具栏，并为其绑定左侧模板
+                        , title: '菜单数据表'
+                        , page: false
+                        , cols: [ [
+                            {type: 'checkbox', fixed: 'left'}
+                            , {field: 'permissionId', title: '权限ID', sort: true, align: 'center'}
+                            , {field: 'permissionName', title: '权限名称', align: 'center', sort: true}
+                        ] ]
+                    });
+                },
+                btn: ['<span class="layui-icon layui-icon-auz">分配权限</span>', '<span class="layui-icon layui-icon-close">关闭窗口</span>'],
+                yes: function (index, layero) {
+                    // 获取选中行
+                    var checkStatus = table.checkStatus('permissionTable');
+                    // 获取选中行的数据
+                    var checkStatusData = checkStatus.data;
+                    // 拼装数据
+                    var paramsPermission = "roleId=" + data.roleId;
+                    $.each(checkStatusData, function (index, item) {
+                        paramsPermission+="&permissionIds="+item.permissionId;
+                    });
+                    $.post("/role/assignPermissionByRoleIdAndPermissionId", paramsPermission, function (res) {
+                        if (res.code == 200) {
+                            layer.msg("分配角色【"+data.roleName+"】的权限成功");
+                        } else {
+                            layer.msg(res.msg);
+                        }
+                        layer.close(index);
+                    });
+                },
+                btn2: function (index, layero) {
+                    layer.close(index);
+                }
+            });
+        }
+    });
+
+</script>
+</html>

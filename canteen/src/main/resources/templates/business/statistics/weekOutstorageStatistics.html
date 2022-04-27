@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+<head>
+    <meta charset="utf-8">
+    <title>某时段食材出库统计</title>
+    <link rel="stylesheet" href="/resources/layui/css/layui.css" media="all"/>
+</head>
+<body style="height: 100%; margin: 0">
+<div class="layui-row">
+    <!--查询条件开始-->
+    <fieldset class="layui-elem-field" align="center">
+        <legend>查询条件</legend>
+        <div class="layui-field-box">
+            <form action="" lay-filter="doSearchForm" id="doSearchForm" class="layui-form layui-form-pane" method="get">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label" style="width: 130px;">出库开始日期</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="startTime" id="startTime" readonly placeholder="yyyy-MM-dd HH:mm:ss" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label" style="width: 130px;">出库结束日期</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="endTime" id="endTime" readonly placeholder="yyyy-MM-dd HH:mm:ss" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <button type="button" class="layui-btn layui-icon layui-icon-search" lay-submit="" lay-filter="doSearch">查询
+                        </button>
+                        <button type="reset" class="layui-btn layui-icon layui-icon-refresh layui-btn-warm">重置</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </fieldset>
+    <!--查询条件结束-->
+</div>
+<div id="container" style="height: 80%;text-align: center"></div>
+<script type="text/javascript" src="/resources/js/echarts.min.js"></script>
+<script type="text/javascript" src="/resources/layui/layui.js"></script>
+<script type="text/javascript">
+    layui.use(["jquery", "form", "laydate"], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var laydate = layui.laydate;
+
+        laydate.render({
+            elem: "#startTime",
+            type: "datetime"
+        });
+        laydate.render({
+            elem: "#endTime",
+            type: "datetime"
+        });
+
+        // 模糊查询
+        form.on("submit(doSearch)", function (data) {
+            // 数据表格重载
+            initWeekOutstorageStatistics(data.field.startTime, data.field.endTime);
+            // 阻止表单提交
+            return false;
+        });
+
+        function initWeekOutstorageStatistics(start, end) {
+            $.get("/material/weekOutstorageStatistics",{startTime: start, endTime: end}, function (res) {
+                var dom = document.getElementById("container");
+                var myChart = echarts.init(dom);
+                var app = {};
+                option = null;
+                option = {
+                    title: {
+                        text: start+'--'+end+' 食材出库统计',
+                        subtext: '学院教工饭堂管理系统',
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{a} <br/>{b} : {c} ({d}%)'
+                    },
+                    legend: {
+                        orient: 'vertical',
+                        right: 100,
+                        top: 20
+                    },
+                    series: [
+                        {
+                            name: '食材',
+                            type: 'pie',
+                            center: ['50%', '50%'],
+                            area: '55%',
+                            data: res.data,
+                            emphasis: {
+                                itemStyle: {
+                                    shadowBlur: 10,
+                                    shadowOffsetX: 0,
+                                    shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                            }
+                        }
+                    ]
+                };
+                ;
+                if (option && typeof option === "object") {
+                    myChart.setOption(option, true);
+                }
+            });
+        }
+
+    });
+</script>
+</body>
+</html>
